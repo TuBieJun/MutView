@@ -15,5 +15,6 @@ python MutView.py -r refpath -p 25466919 -c 2 -b test.bam -s > test_2_25466919.h
 -n      the max reads to show
 ```
 
-## the example html look
+## the example html 
+the example html is like as test_2_25466919.html
 
