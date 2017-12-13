@@ -170,6 +170,8 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                 if temp >= read_pos:
                     read_pos_cigar = i
                     break
+        else:
+            continue
 
         if ">" in new_base_list[read_pos]:
             record_allele = re.search(r'>([ATCGN\_I])<', new_base_list[read_pos]).group(1)
