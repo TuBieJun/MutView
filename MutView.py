@@ -174,6 +174,16 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
             continue
 
         if ">" in new_base_list[read_pos]:
+            single_mut = re.search(r'>([ATCGNI])<', new_base_list[read_pos])
+            if single_mut:
+                record_allele = single_mut.group(1)
+            else:
+                if re.search(r'>(\_+)<', new_base_list[read_pos]):
+                    record_allele = "_"
+                else:
+                    record_allele = None
+
+ 
             record_allele = re.search(r'>([ATCGN\_I])<', new_base_list[read_pos]).group(1)
         else:
             record_allele = new_base_list[read_pos]
@@ -223,7 +233,7 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                        </tr>'.format(chrom, var_pos, D_base_count.get("A", 0),
                                     D_base_count.get("T", 0), D_base_count.get("C", 0),
                                     D_base_count.get("G", 0), D_base_count.get("N", 0),
-                                    D_base_count.get("I", 0), D_base_count.get("-", 0))
+                                    D_base_count.get("I", 0), D_base_count.get("_", 0))
 
     print show_depth_info
     print show_genome_info
