@@ -86,9 +86,9 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
         else:
             pair_info = "*"
         if record.is_reverse:
-            strand_info = "positive"
-        else:
             strand_info = "reverse"
+        else:
+            strand_info = "positive"
 
         read_info_html = "<td><p>{0}_{1}_{2}</p></td>".format(read_name,
                                                               pair_info,
