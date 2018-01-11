@@ -30,13 +30,19 @@ def color_seq(seq):
 def generate_color_html_seq(seq, return_type):
     
     D_color_rule = {
-            "A" : "#FF0000",#red
+            "A" : "#FF0000", #red
+            "a" : "#FF0000", #red
             "T" : "#00FF00", #green
+            "t" : "#00FF00", #green
             "C" : "#FFFF00", #yellow
+            "c" : "#FFFF00", #yellow
             "G" : "#00CCCC", #blue
+            "g" : "#00CCCC", #blue
             "I" : "#FF00FF", #purple
+            "i" : "#FF00FF",
             "_" : "#00FFFF", #cyan
             "N" : "#C0C0C0",  #gray
+            "n" : "#C0C0C0",
             "|" : "#FF9900",
             }
     color_base_list = []

@@ -5,6 +5,7 @@
 
 
 import re
+import sys
 import pysam
 import argparse
 import dear_seq
@@ -43,8 +44,9 @@ def insert_list(l, pos_list, char):
 
 def show_sorted_seq(mut_base, D_record, max_n):
     n = 0
-    order_rule = ["A", "T", "C", "G", "I", "_", "N"]
+    order_rule = ["A", "a", "T", "t", "C", "c", "G", "g", "I", "i", "_", "N", "n"]
     order_rule.remove(mut_base)
+    order_rule.remove(mut_base.lower())
     for allele in order_rule:
         for show_seq in D_record.get(allele, []):
             print show_seq
@@ -56,10 +58,19 @@ def show_sorted_seq(mut_base, D_record, max_n):
         n += 1
         if n >  max_n:
             return None
+    for show_seq in D_record.get(mut_base.lower, []):
+        print show_seq
+        n += 1
+        if n >  max_n:
+            return None
+
+
+def filter_base_qual(seq_l, qual_l, min_bq):
+    return [ j if qual_l[i] >= min_bq else j.lower() for i,j in enumerate(seq_l) ]
 
 def show_reads(sam_iter, chrom, var_pos, window_start, 
               window_end, genome_base_list, mut_base, show_genome_info, 
-              max_record_num=100,show_mut=False):
+              min_bq,min_aq,max_record_num=100, show_mut=False):
     
     D_seq = {}
     D_record = {}
@@ -68,7 +79,6 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
     show_record_num = 0
     show_record_list = []
     for record in sam_iter:
-
         if show_record_num > max_record_num:
             break
 
@@ -93,7 +103,8 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
         read_info_html = "<td><p>{0}_{1}_{2}</p></td>".format(read_name,
                                                               pair_info,
                                                               strand_info)
-        raw_base_list = list(record.seq)
+        #raw_base_list = list(record.seq)
+        #raw_qual_list = list(record.qual)
         new_base_list = []
 
         if show_start > var_pos:
@@ -102,6 +113,8 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
         match_l = 0
         match_or_mismatch_l = 0
         md_index = 0
+
+
 
         if not record.cigartuples:
             continue
@@ -112,7 +125,10 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
             if flag == 4:
                 #sub_list = [ dear_seq.color_seq(base) for base 
                 #           in raw_base_list[index:index+length] ]
-                sub_list = dear_seq.generate_color_html_seq(raw_base_list[index:index+length], 
+                sub_list = filter_base_qual(record.seq[index:index+length],
+                                            record.qual[index:index+length],
+                                            min_bq)
+                sub_list = dear_seq.generate_color_html_seq(sub_list, 
                                                             "l")
                 index += length
                 if i == 0:
@@ -121,26 +137,10 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                     show_end += length
             # match or mismatch
             if flag == 0:
-                # you can try use MD flag to find all mismatch, it's is error prone
-
-                #match_or_mismatch_l += length
-                #mismatch_sub_list_pos = []
-                #while md_index < len(md_info_l):
-                #    raw_match_l = match_l
-                #    mismatch_base_n = len(md_info_l[md_index][1])
-                #    match_l += int(md_info_l[md_index][0]) + mismatch_base_n
-                #    if match_l <= match_or_mismatch_l:
-                #        if md_info_l[md_index][1]:
-                #            n = 0
-                #            while n < (mismatch_base_n-1):
-                #                mismatch_sub_list_pos.append(match_l-match_or_mismatch_l-1-n)
-                #                n += 1
-                #    else:
-                #        match_l = raw_match_l
-                #        break
-                #    md_index+=1
-
-                sub_list = raw_base_list[index:index+length]
+                #sub_list = raw_base_list[index:index+length]
+                sub_list = filter_base_qual(record.seq[index:index+length],
+                                            record.qual[index:index+length],
+                                            min_bq)
                 index += length
                 show_end += length
             # deletion
@@ -149,11 +149,13 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                 show_end += length
             # insert
             if flag == 1:
+                var_base = "I" if record.qual[index] >= min_bq else "i"
                 index += length
+                
                 if new_base_list:
-                    new_base_list[-1] = "I"
+                    new_base_list[-1] = var_base
                 else:
-                    new_base_list.append("I")
+                    new_base_list.append(var_base)
                     
             new_base_list.extend(sub_list)
 
@@ -174,7 +176,7 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
             continue
 
         if ">" in new_base_list[read_pos]:
-            single_mut = re.search(r'>([ATCGNI])<', new_base_list[read_pos])
+            single_mut = re.search(r'>([ATCGNIatcgni])<', new_base_list[read_pos])
             if single_mut:
                 record_allele = single_mut.group(1)
             else:
@@ -184,7 +186,7 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                     record_allele = None
 
  
-            record_allele = re.search(r'>([ATCGN\_I])<', new_base_list[read_pos]).group(1)
+            #record_allele = re.search(r'>([ATCGN\_I])<', new_base_list[read_pos]).group(1)
         else:
             record_allele = new_base_list[read_pos]
         if read_pos_cigar != 4 and read_pos_cigar != 3:
@@ -208,16 +210,19 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
         # compare reference and record
         for k  in xrange(len(new_base_list)):
             v = new_base_list[k]
-            if ("<" not in v) and ( v != genome_base_list_cut[k])  \
-                and (v != "N") and ("|" not in v):
+            if ("<" not in v) and ( v.upper() != genome_base_list_cut[k])  \
+                and (v.upper() != "N") and ("|" not in v):
                 new_base_list[k] = dear_seq.generate_color_html_seq(v, "s")
         if s_aln:
             new_base_list = ["&nbsp;"]*(show_start - window_start) + new_base_list
 
         # print the result
-        #new_base_list.append("</br>")
+        #new_base_list.append("</br>") #B9B9FF
         show_seq = "".join(new_base_list)
-        seq_info_html = '<td><p>{0}</p></td>'.format(show_seq)
+        if record.mapping_quality >= min_aq:
+            seq_info_html = '<td><p>{0}</p></td>'.format(show_seq)
+        else:
+            seq_info_html = '<td bgcolor="#B9B9FF"><p>{0}</p></td>'.format(show_seq)
         show_info = '<tr>\n{0}\n{1}</tr>'.format(read_info_html, seq_info_html)
         if show_mut:
             D_record.setdefault(record_allele, []).append(show_info)
@@ -230,10 +235,10 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                             <td><p>{0}:{1}</p></td> \
                             <td><p>A:{2}&nbsp;T:{3}&nbsp;C:{4}&nbsp;G:{5}&nbsp; \
                             N:{6}&nbsp;ins:{7}&nbsp;del:{8}&nbsp;</p></td> \
-                       </tr>'.format(chrom, var_pos, D_base_count.get("A", 0),
-                                    D_base_count.get("T", 0), D_base_count.get("C", 0),
-                                    D_base_count.get("G", 0), D_base_count.get("N", 0),
-                                    D_base_count.get("I", 0), D_base_count.get("_", 0))
+                       </tr>'.format(chrom, var_pos, D_base_count.get("A", 0) + D_base_count.get("a", 0),
+                                    D_base_count.get("T", 0) + D_base_count.get("t", 0) , D_base_count.get("C", 0) + D_base_count.get("c", 0), 
+                                    D_base_count.get("G", 0) + D_base_count.get("C", 0), D_base_count.get("N", 0) + D_base_count.get("n", 0),
+                                    D_base_count.get("I", 0) + D_base_count.get("i", 0) , D_base_count.get("_", 0))
 
     print show_depth_info
     print show_genome_info
@@ -258,9 +263,12 @@ def main():
                         help="sort as base like igv, default is False")
     parser.add_argument("-n", "--num_reads", type=int, default=100,
                         help="the max reads number to view default is 100")
+    parser.add_argument("-q", "--base_q", type=int, default=20, help="the min base quality")
+    parser.add_argument("-Q", "--aln_q", type=int, default=20, help="the min aln quality")
     args = parser.parse_args()
     
-    
+    min_bq = chr(args.base_q + 33);
+    min_aq = args.aln_q + 33;
     user_pos = args.pos
     chrom = args.chrom
     referece_fasta = args.ref
@@ -306,12 +314,12 @@ def main():
     mut_base = dear_seq.get_genome_seq(chrom, user_pos, user_pos+1, referece_fasta)[0]
     if args.sort:
         show_reads(sam_iter, chrom, user_pos, window_start, window_end, 
-                  genome_base_list, mut_base, show_genome_info, max_record_num = args.num_reads,
-                  show_mut = True)
+                  genome_base_list, mut_base, show_genome_info,
+                  min_bq, min_aq, max_record_num = args.num_reads, show_mut = True)
     else:
         show_reads(sam_iter, chrom, user_pos, window_start, window_end, 
-                  genome_base_list, mut_base, show_genome_info, max_record_num = args.num_reads,
-                  show_mut = False)
+                  genome_base_list, mut_base, show_genome_info,
+                  min_bp, min_aq, max_record_num = args.num_reads,show_mut = False)
 
     #print the html second half
     print_html_tail()
