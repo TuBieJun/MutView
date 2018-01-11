@@ -319,7 +319,7 @@ def main():
     else:
         show_reads(sam_iter, chrom, user_pos, window_start, window_end, 
                   genome_base_list, mut_base, show_genome_info,
-                  min_bp, min_aq, max_record_num = args.num_reads,show_mut = False)
+                  min_bq, min_aq, max_record_num = args.num_reads,show_mut = False)
 
     #print the html second half
     print_html_tail()
