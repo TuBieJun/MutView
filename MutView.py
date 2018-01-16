@@ -267,8 +267,8 @@ def main():
     parser.add_argument("-Q", "--aln_q", type=int, default=20, help="the min aln quality")
     args = parser.parse_args()
     
-    min_bq = chr(args.base_q + 33);
-    min_aq = args.aln_q + 33;
+    min_bq = chr(args.base_q + 33)
+    min_aq = args.aln_q
     user_pos = args.pos
     chrom = args.chrom
     referece_fasta = args.ref
