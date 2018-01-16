@@ -237,7 +237,7 @@ def show_reads(sam_iter, chrom, var_pos, window_start,
                             N:{6}&nbsp;ins:{7}&nbsp;del:{8}&nbsp;</p></td> \
                        </tr>'.format(chrom, var_pos, D_base_count.get("A", 0) + D_base_count.get("a", 0),
                                     D_base_count.get("T", 0) + D_base_count.get("t", 0) , D_base_count.get("C", 0) + D_base_count.get("c", 0), 
-                                    D_base_count.get("G", 0) + D_base_count.get("C", 0), D_base_count.get("N", 0) + D_base_count.get("n", 0),
+                                    D_base_count.get("G", 0) + D_base_count.get("g", 0), D_base_count.get("N", 0) + D_base_count.get("n", 0),
                                     D_base_count.get("I", 0) + D_base_count.get("i", 0) , D_base_count.get("_", 0))
 
     print show_depth_info
