@@ -68,10 +68,9 @@ def get_genome_seq(chrom, start_pos, end_pos, ref):
                                     )
     stdout_value, stderr_value = samtools_info.communicate()    
     if stderr_value:
-        print stderr_value
-        return None
+        raise(Exception("samtools faidx error!\n" + stderr_value))
     else:
-        return  "".join(stdout_value.split("\n")[1:])
+        return  "".join(str(stdout_value, encoding="utf8").split("\n")[1:])
         
 
 

@@ -18,6 +18,6 @@ python MutView.py -r refpath -p 25466919 -c 2 -b test.bam -s > test_2_25466919.h
 ## the example html  
 The example html is test_2_25466919.html, look like this  
 
-![example](https://github.com/TuBieJun/MutView/raw/master/Screenshots/example.png)  
+![example](https://github.com/TuBieJun/MutView/raw/master/screenshots/example.png)  
 
 
