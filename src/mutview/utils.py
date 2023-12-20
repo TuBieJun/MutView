@@ -59,9 +59,9 @@ def generate_color_html_seq(seq, return_type):
     else:
         return "".join(color_base_list)
     
-def get_genome_seq(chrom, start_pos, end_pos, ref):
-    samtools_info = subprocess.Popen('samtools faidx {0} {1}:{2}-{3}'.format(
-                                    ref, chrom, start_pos, end_pos),
+def get_genome_seq(chrom, start_pos, end_pos, ref, samtools_path):
+    samtools_info = subprocess.Popen('{4} faidx {0} {1}:{2}-{3}'.format(
+                                    ref, chrom, start_pos, end_pos, samtools_path),
                                     shell = True,
                                     stdout = subprocess.PIPE,
                                     stderr = subprocess.PIPE

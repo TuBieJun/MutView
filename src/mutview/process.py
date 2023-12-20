@@ -20,10 +20,10 @@ def out_html_header(title_name, font, handler):
     handler.write('<style type="text/css">\n')
     handler.write('table {border:1px solid gray;padding:2x;border-collapse:collapse;}\n')
     handler.write('td {border:1px solid gray;padding-left:2px;padding-right:2px;text-align:left}\n')
-    handler.write('p \{color:white;font-family: {font}\}\n'.format(font=font))
+    handler.write('p {{color:white;font-family: {font}}}\n'.format(font=font))
     handler.write('</style>\n')
     handler.write('<title>{0}</title>\n'.format(title_name))
-    handler.write('<body style="background-color:black;font-family: {font}\n">'.format(font=font))
+    handler.write('<body style="background-color:black;font-family: {font}">\n'.format(font=font))
     handler.write('<table>\n')
 
 def out_html_tail(handler):
@@ -260,8 +260,13 @@ def main():
                         help="the max reads number to view default is 100")
     parser.add_argument("-q", "--base_q", type=int, default=20, 
                         help="the min base quality, reads with bq below the specified threshold will be lowercases. default is 20.")
-    parser.add_argument("-Q", "--aln_q", type=int, default=20, 
-                        help="the min aln quality, bases with mq below the specified threshold will be highlighted. default is 20,")
+    parser.add_argument("-Q", "--aln_q", type=int, default=20,
+                        help="the min aln quality, bases with mq below the specified threshold will be highlighted. default is 20.")
+    parser.add_argument("-f", "--font", type=str, default="consolas", 
+                        help="the the font of the out html file, it should be monospaced font, default is consolas for windows, \
+                            if you view the out html file in mac, you need set the value to Menlo or other monospaced fonts")
+    parser.add_argument("-S", "--samtools", default="samtools",
+                        help="the samtools path, default is samtools")
 
     if len(sys.argv) == 1:
         parser.parse_args(["-h"])
@@ -276,6 +281,8 @@ def main():
     referece_fasta = args.ref
     bam_file = args.bam
     out_file = args.out
+    font = args.font
+    samtools_path = args.samtools
     with open(out_file, "w") as out_handler:
         window_size = int(args.window_size/2)
     
@@ -283,11 +290,11 @@ def main():
         window_end = user_pos +  window_size
 
         # out the html first half
-        out_html_header("{0}:{1}".format(chrom, user_pos))
+        out_html_header("{0}:{1}".format(chrom, user_pos), font, out_handler)
 
         # out the reference seq 
         genome_base_list = list(utils.get_genome_seq(chrom, window_start,
-                                            window_end, referece_fasta))
+                                            window_end, referece_fasta, samtools_path))
         insert_list(genome_base_list, [window_size+1, window_size], "|")
 
         genome_base_seq_colored = utils.generate_color_html_seq(genome_base_list, "s")
@@ -302,7 +309,7 @@ def main():
         # out the fusion reads cover user pos
         sam_file = pysam.AlignmentFile(bam_file, "rb")
         sam_iter = sam_file.fetch(chrom, user_pos-150, user_pos+150)
-        mut_base = utils.get_genome_seq(chrom, user_pos, user_pos+1, referece_fasta)[0]
+        mut_base = utils.get_genome_seq(chrom, user_pos, user_pos+1, referece_fasta, samtools_path)[0]
         if args.sort:
             out_reads(sam_iter, chrom, user_pos, window_start, window_end, 
                       genome_base_list, mut_base, show_genome_info,
