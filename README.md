@@ -65,6 +65,6 @@ optional arguments:
 
 **Here is example out:**
 
-![example](https://github.com/TuBieJun/MutView/raw/master/screenshots/example.png)  
+![example](https://github.com/TuBieJun/MutView/raw/master/screenshots/example_out.png)  
 
 
