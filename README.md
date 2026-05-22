@@ -1,6 +1,8 @@
 # MutView
 MutView is a tool to view the reads cover a mutation in bam file, output file is html format. It's so fast and efficient, just like a lightweight IGV(Integrative Genomics Viewer).
 
+![example](https://github.com/TuBieJun/MutView/raw/master/screenshots/example.png) 
+
 ## Requires
 - python >= 3.7
 - samtools
