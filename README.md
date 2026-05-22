@@ -61,7 +61,7 @@ optional arguments:
 - The background color of reads with alignment quality below the specified threshold will be highlighted.
 - Indels are represented using the characters "I" and "_". 
 - The count of each base type will be displayed at the top
-- The left sidebar will display the name of the reads, pair information, and positive/negative strand information.
+- The left sidebar will display the name of the reads, pair information, and forward/reverse strand information.
 
 **Here is example out:**
 

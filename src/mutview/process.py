@@ -96,7 +96,7 @@ def out_reads(sam_iter, chrom, var_pos, window_start,
         if record.is_reverse:
             strand_info = "reverse"
         else:
-            strand_info = "positive"
+            strand_info = "forward"
 
         read_info_html = "<td><p>{0}_{1}_{2}</p></td>".format(read_name,
                                                               pair_info,
