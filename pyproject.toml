@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mutview"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Li Teng", email="707704459@qq.com" },
 ]
