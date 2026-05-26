@@ -26,6 +26,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y samtools
           python -m pip install --upgrade pip
           python -m pip install build
           python -m pip install .
@@ -33,39 +35,3 @@ jobs:
 
       - name: Run pytest
         run: pytest -q tests/test_mutview.py
-
-  release:
-    name: Release package
-    needs: test
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-
-      - name: Build source and wheel distributions
-        run: python -m build
-
-      - name: Create GitHub Release and upload artifacts
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          files: dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.5.2
-        with:
-          pypi_api_token: ${{ secrets.PYPI_API_TOKEN }}
